@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>💖 Cute Quote + Live Chat</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <h1>💌 Cute Quote Generator</h1>
+  <p>Click the button for a random funny or sweet message.</p>
+
+  <button onclick="showQuote()">✨ Give Me a Quote</button>
+  <div id="quote" style="display:none;"></div>
+
+  <h2>💬 Live Chat</h2>
+  <p>Users online: <span id="userCount">0</span></p>
+  
+  <div id="chatBox"></div>
+  <input id="chatInput" type="text" placeholder="Type a message...">
+  <button onclick="sendMessage()">Send</button>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    const socket = io();
+    const username = prompt("Enter your name:") || "Anonymous";
+
+    const quotes = [
+      "You must be a magician… because whenever I look at you, everyone else disappears.",
+      "If kisses were snowflakes, I’d send you a blizzard.",
+      "You’re like a cloud… soft, dreamy, and always making my day better.",
+      "If you were a vegetable, you’d be a cute-cumber.",
+      "Are you French? Because *Eiffel* for you.",
+      "You’re the peanut butter to my jelly.",
+      "I love you more than WiFi… and that’s saying a lot.",
+      "You’re so sweet, you’re giving my heart cavities."
+    ];
+
+    function showQuote() {
+      const random = Math.floor(Math.random() * quotes.length);
+      const quoteBox = document.getElementById("quote");
+      quoteBox.style.display = "block";
+      quoteBox.innerText = quotes[random];
+    }
+
+    function sendMessage() {
+      const input = document.getElementById("chatInput");
+      if (input.value.trim() !== "") {
+        socket.emit('chatMessage', { user: username, text: input.value });
+        input.value = "";
+      }
+    }
+
+    socket.on('chatMessage', (msg) => {
+      const chatBox = document.getElementById("chatBox");
+      const msgDiv = document.createElement("div");
+      msgDiv.classList.add("message");
+      msgDiv.classList.add(msg.user === username ? "mine" : "theirs");
+      msgDiv.innerHTML = `<strong>${msg.user}:</strong> ${msg.text}`;
+      chatBox.appendChild(msgDiv);
+      chatBox.scrollTop = chatBox.scrollHeight;
+    });
+
+    socket.on('userCount', (count) => {
+      document.getElementById("userCount").textContent = count;
+    });
+  </script>
+</body>
+</html>
